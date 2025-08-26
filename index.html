@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <meta http-equiv="content-language" content="en">
+    <title>Morning Workout Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 420px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .phase-tracker {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            border-radius: 15px;
+            padding: 20px 15px;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .phase-bar-container {
+            position: relative;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 30px;
+            overflow: visible;
+            margin-bottom: 15px;
+        }
+
+        .phase-segments {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            padding: 0 5px;
+        }
+
+        .phase-segment {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 8px;
+            border-right: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .phase-segment:last-child {
+            border-right: none;
+        }
+
+        .phase-number {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .phase-label {
+            font-size: 7px;
+            text-align: center;
+            line-height: 1.1;
+            opacity: 0.9;
+        }
+
+        .progress-fill {
+            position: absolute;
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 30px;
+            transition: width 0.5s ease;
+            z-index: 0;
+        }
+
+        .phase-pointer {
+            position: absolute;
+            top: -15px;
+            width: 0;
+            height: 0;
+            border-left: 12px solid transparent;
+            border-right: 12px solid transparent;
+            border-top: 20px solid #FFD700;
+            transition: left 0.5s ease;
+            transform: translateX(-12px);
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .current-phase-info {
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .timer-display {
+            font-size: 3.5em;
+            font-weight: bold;
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .timer-progress {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .timer-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+            border-radius: 4px;
+            transition: width 1s linear;
+        }
+
+        .duration-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .duration-btn {
+            padding: 10px 20px;
+            border: 2px solid #d32f2f;
+            background: white;
+            color: #d32f2f;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .duration-btn:hover {
+            background: #d32f2f;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .duration-btn.active {
+            background: #d32f2f;
+            color: white;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .control-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        .pause-btn {
+            background: linear-gradient(135deg, #FFC107 0%, #FF9800 100%);
+            color: white;
+        }
+
+        .pause-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        @media (max-width: 380px) {
+            .phase-label {
+                font-size: 6px;
+            }
+            .phase-number {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Morning Workout Timer</h1>
+        
+        <div class="phase-tracker">
+            <div class="phase-bar-container">
+                <div class="progress-fill" id="phaseProgress" style="width: 0%"></div>
+                <div class="phase-pointer" id="phasePointer" style="left: 0%"></div>
+                <div class="phase-segments">
+                    <div class="phase-segment">
+                        <div class="phase-number">1</div>
+                        <div class="phase-label">LYMPHATIC<br>HOP</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">2</div>
+                        <div class="phase-label">BODY<br>WAVE</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">3</div>
+                        <div class="phase-label">ARM<br>SWING</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">4</div>
+                        <div class="phase-label">TRUNK<br>TWIST</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">5</div>
+                        <div class="phase-label">DEAD<br>ARMS</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">6</div>
+                        <div class="phase-label">GOLF<br>SWING</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">7</div>
+                        <div class="phase-label">WIND<br>MILL</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">8</div>
+                        <div class="phase-label">SLAP<br>MARCH</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">9</div>
+                        <div class="phase-label">PUSH<br>SLIDE</div>
+                    </div>
+                    <div class="phase-segment">
+                        <div class="phase-number">10</div>
+                        <div class="phase-label">FINAL<br>PLIEÉ</div>
+                    </div>
+                </div>
+            </div>
+            <div class="current-phase-info" id="currentPhaseName">Phase 1: Lymphatic Hop</div>
+        </div>
+
+        <div class="timer-display" id="timer">00:00</div>
+        
+        <div class="timer-progress">
+            <div class="timer-progress-fill" id="timerProgress" style="width: 0%"></div>
+        </div>
+
+        <div class="duration-selector">
+            <button class="duration-btn" data-duration="15">15s</button>
+            <button class="duration-btn active" data-duration="30">30s</button>
+            <button class="duration-btn" data-duration="45">45s</button>
+            <button class="duration-btn" data-duration="60">60s</button>
+        </div>
+
+        <div class="controls">
+            <button class="control-btn start-btn" id="startBtn">Start</button>
+            <button class="control-btn pause-btn" id="pauseBtn" style="display: none;">Pause</button>
+            <button class="control-btn reset-btn" id="resetBtn">Reset</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Durchlauf</div>
+                <div class="stat-value" id="roundCount">1/10</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Gesamtzeit</div>
+                <div class="stat-value" id="totalTime">00:00</div>
+            </div>
+        </div>
+		<div style="text-align:center; margin-top:20px; font-size:0.8em; color:#666;">
+    © 2025 RADWB
+</div>
+    </div>
+	
+
+    <script>
+        // Phase definitions
+        const phases = [
+            { number: 1, name: "Lymphatic Hop" },
+            { number: 2, name: "Bodywave" },
+            { number: 3, name: "Alternate arm swing" },
+            { number: 4, name: "Trunk twist" },
+            { number: 5, name: "Dead arms" },
+            { number: 6, name: "Golf swing" },
+            { number: 7, name: "Wind mill" },
+            { number: 8, name: "Slap March" },
+            { number: 9, name: "Push slide" },
+            { number: 10, name: "Final Plieé" }
+        ];
+
+        // State variables
+        let currentPhase = 0;
+        let selectedDuration = 30;
+        let timeRemaining = selectedDuration;
+        let isRunning = false;
+        let isPaused = false;
+        let timerInterval = null;
+        let totalElapsedTime = 0;
+        let totalTimeInterval = null;
+
+        // Audio context for beep
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Elements
+        const timerDisplay = document.getElementById('timer');
+        const currentPhaseNameDisplay = document.getElementById('currentPhaseName');
+        const timerProgressBar = document.getElementById('timerProgress');
+        const phaseProgressBar = document.getElementById('phaseProgress');
+        const phasePointer = document.getElementById('phasePointer');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const roundCountDisplay = document.getElementById('roundCount');
+        const totalTimeDisplay = document.getElementById('totalTime');
+
+        // Duration buttons
+        document.querySelectorAll('.duration-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!isRunning) {
+                    document.querySelectorAll('.duration-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedDuration = parseInt(btn.dataset.duration);
+                    timeRemaining = selectedDuration;
+                    updateTimerDisplay();
+                }
+            });
+        });
+
+        // Update timer display
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            const progressPercent = ((selectedDuration - timeRemaining) / selectedDuration) * 100;
+            timerProgressBar.style.width = `${progressPercent}%`;
+        }
+
+        // Update phase display
+        function updatePhaseDisplay() {
+            const progressPercent = (currentPhase / 10) * 100;
+            const pointerPercent = ((currentPhase + 0.5) / 10) * 100;
+            
+            phaseProgressBar.style.width = `${progressPercent}%`;
+            phasePointer.style.left = `${pointerPercent}%`;
+            
+            if (currentPhase < phases.length) {
+                currentPhaseNameDisplay.textContent = `Phase ${phases[currentPhase].number}: ${phases[currentPhase].name}`;
+                roundCountDisplay.textContent = `${phases[currentPhase].number}/10`;
+            }
+        }
+
+        // Update total time display
+        function updateTotalTime() {
+            const minutes = Math.floor(totalElapsedTime / 60);
+            const seconds = totalElapsedTime % 60;
+            totalTimeDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Text to speech
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                // Small delay for iOS Safari
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 1.0;
+                    utterance.pitch = 1.0;
+                    utterance.volume = 1.0;
+                    
+                    // Get voices and select English voice
+                    const voices = window.speechSynthesis.getVoices();
+                    const englishVoice = voices.find(voice => 
+                        voice.lang === 'en-US' || voice.lang.startsWith('en')
+                    );
+                    if (englishVoice) {
+                        utterance.voice = englishVoice;
+                    }
+                    
+                    window.speechSynthesis.speak(utterance);
+                    
+                    // Debug log
+                    console.log('Speaking:', text);
+                    console.log('Voices available:', voices.length);
+                }, 100);
+            } else {
+                console.log('Speech synthesis not supported');
+                alert('Sprachausgabe wird von diesem Browser nicht unterstützt');
+            }
+        }
+
+        // Create beep sound
+        function playBeep() {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+
+        // Start new phase
+        function startPhase() {
+            const phase = phases[currentPhase];
+            updatePhaseDisplay();
+            
+            // Announce phase in English
+            speak(`Phase ${phase.number}. ${phase.name}`);
+            
+            timeRemaining = selectedDuration;
+            updateTimerDisplay();
+        }
+
+        // Timer tick
+        function tick() {
+            if (timeRemaining > 0) {
+                timeRemaining--;
+                updateTimerDisplay();
+                
+                // Warning beeps
+                if (timeRemaining <= 3 && timeRemaining > 0) {
+                    playBeep();
+                }
+            } else {
+                // Phase complete
+                playBeep();
+                
+                if (currentPhase < phases.length - 1) {
+                    currentPhase++;
+                    startPhase();
+                } else {
+                    // Workout complete
+                    stop();
+                    // Show completion state
+                    currentPhase = 10;
+                    updatePhaseDisplay();
+                    speak("Workout complete! Great job! Have a beautiful day, Hero!");
+                    alert("🎉 Workout complete! Great job!");
+                    currentPhase = 0; // Reset for next workout
+                }
+            }
+        }
+
+        // Start workout
+        function start() {
+            if (!isRunning) {
+                isRunning = true;
+                isPaused = false;
+                startBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+                
+                if (currentPhase === 0 && timeRemaining === selectedDuration) {
+                    startPhase();
+                }
+                
+                timerInterval = setInterval(tick, 1000);
+                totalTimeInterval = setInterval(() => {
+                    totalElapsedTime++;
+                    updateTotalTime();
+                }, 1000);
+            }
+        }
+
+        // Pause workout
+        function pause() {
+            if (isRunning && !isPaused) {
+                isPaused = true;
+                isRunning = false;
+                clearInterval(timerInterval);
+                clearInterval(totalTimeInterval);
+                pauseBtn.textContent = 'Resume';
+            } else if (isPaused) {
+                isPaused = false;
+                isRunning = true;
+                timerInterval = setInterval(tick, 1000);
+                totalTimeInterval = setInterval(() => {
+                    totalElapsedTime++;
+                    updateTotalTime();
+                }, 1000);
+                pauseBtn.textContent = 'Pause';
+            }
+        }
+
+        // Stop workout
+        function stop() {
+            isRunning = false;
+            isPaused = false;
+            clearInterval(timerInterval);
+            clearInterval(totalTimeInterval);
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            pauseBtn.textContent = 'Pause';
+        }
+
+        // Reset workout
+        function reset() {
+            stop();
+            currentPhase = 0;
+            timeRemaining = selectedDuration;
+            totalElapsedTime = 0;
+            updateTimerDisplay();
+            updateTotalTime();
+            updatePhaseDisplay();
+        }
+
+        // Event listeners
+        startBtn.addEventListener('click', start);
+        pauseBtn.addEventListener('click', pause);
+        resetBtn.addEventListener('click', reset);
+
+        // Initialize
+        updateTimerDisplay();
+        updatePhaseDisplay();
+        
+        // Load voices on startup to ensure English voice is available
+        if ('speechSynthesis' in window) {
+            // iOS Safari needs this to work properly
+            const loadVoices = () => {
+                const voices = window.speechSynthesis.getVoices();
+                console.log('Loaded voices:', voices.length);
+                if (voices.length > 0) {
+                    const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+                    console.log('English voices available:', englishVoices.map(v => v.name));
+                }
+            };
+            
+            // Load immediately
+            loadVoices();
+            
+            // Also load on voices changed event
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+            }
+            
+            // iOS Safari hack - sometimes needs a small delay
+            setTimeout(loadVoices, 100);
+        } else {
+            console.warn('Speech synthesis not supported in this browser');
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MR Timer</title>
+  <style>
+    :root{
+      --bg1:#0f172a; --bg2:#111827;
+      --panel:rgba(255,255,255,.08);
+      --panelBorder:rgba(255,255,255,.14);
+      --text:#e5e7eb; --muted:#9ca3af;
+      --accent1:#7c3aed; --accent2:#22d3ee;
+      --ok1:#10b981; --ok2:#34d399;
+      --amber:#f59e0b; --danger:#ef4444;
+      --track:#1f2937; --dot:#334155; --dotActive:#22c55e;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:28px;
+      background:
+        radial-gradient(1100px 700px at 15% 0%, rgba(124,58,237,.18), transparent 60%),
+        radial-gradient(900px 650px at 90% 20%, rgba(34,211,238,.14), transparent 60%),
+        linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:var(--text); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+    }
+
+    .container{
+      width:100%; max-width:720px;
+      background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--panelBorder);
+      border-radius:26px; padding:26px 24px 18px;
+      backdrop-filter: blur(16px) saturate(120%);
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+    }
+
+    h1{
+      margin:0 0 20px; text-align:center; font-size:32px; font-weight:900; letter-spacing:.3px;
+      background:linear-gradient(135deg,var(--accent2),var(--accent1));
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    }
+
+    /* === Phase header / stepper === */
+    .phase{
+      background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid var(--panelBorder);
+      border-radius:18px; padding:18px 16px; margin-bottom:18px;
+    }
+    .phase-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+    .phase-title{ font-weight:800; font-size:16px; text-transform:uppercase; letter-spacing:.8px; }
+    .phase-count{ font-weight:800; opacity:.85; }
+
+    .stepper{
+      position:relative; padding:18px 8px 0;
+    }
+    .stepper-track{
+      position:relative; height:6px; background:var(--track); border-radius:999px;
+    }
+    .stepper-fill{
+      position:absolute; left:0; top:0; bottom:0; width:0%;
+      background:linear-gradient(90deg,var(--ok1),var(--ok2)); border-radius:999px;
+      transition:width .45s ease;
+      box-shadow:0 0 0 1px rgba(0,0,0,.15) inset;
+    }
+    .stepper-dots{
+      position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
+      display:grid; grid-template-columns:repeat(10,1fr);
+      gap:0; padding:0 2px;
+    }
+    .dot{
+      width:14px; height:14px; border-radius:999px; justify-self:center;
+      background:var(--dot); border:2px solid rgba(255,255,255,.12);
+      box-shadow:0 2px 6px rgba(0,0,0,.25);
+      transition:transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+    .dot.active{ background:var(--dotActive); border-color:rgba(34,197,94,.5); transform:scale(1.05); }
+
+    .stepper-labels{
+      margin-top:14px;
+      display:grid; grid-template-columns:repeat(10,1fr); gap:4px;
+    }
+    .step-label{
+      text-align:center; font-size:11px; line-height:1.05; color:#e5e7eb; opacity:.95;
+      word-break:keep-all;
+    }
+
+    /* === Timer === */
+    .timer{
+      text-align:center;
+    }
+    .time{
+      font-variant-numeric:tabular-nums; font-size:72px; font-weight:900; line-height:1; margin:6px 0 12px;
+    }
+    .timebar{
+      width:100%; height:12px; background:rgba(255,255,255,.08); border:1px solid var(--panelBorder);
+      border-radius:999px; overflow:hidden; margin-bottom:18px;
+    }
+    .timebar-fill{
+      height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent1)); transition:width 1s linear;
+    }
+
+    /* === Controls === */
+    .chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:18px; }
+    .chip{
+      padding:10px 16px; border-radius:999px; font-weight:800; font-size:15px; letter-spacing:.3px; cursor:pointer;
+      background:rgba(255,255,255,.06); border:1px solid var(--panelBorder); color:var(--text);
+      transition:transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .chip:hover{ transform:translateY(-2px); }
+    .chip.active{ background:linear-gradient(135deg,var(--accent2),var(--accent1)); color:#0b1020; border-color:transparent; }
+
+    .controls{ display:flex; justify-content:center; gap:14px; }
+    .btn{
+      padding:14px 24px; border:none; border-radius:16px; font-weight:900; letter-spacing:.6px; text-transform:uppercase; cursor:pointer;
+      color:#0b1020; transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+    .btn:active{ transform: translateY(0); filter: brightness(.98); }
+    .start-btn{ background: linear-gradient(135deg, var(--ok2), var(--ok1)); box-shadow:0 8px 18px rgba(16,185,129,.35); }
+    .pause-btn{ background: linear-gradient(135deg, #fde047, var(--amber)); color:#1f2937; box-shadow:0 8px 18px rgba(245,158,11,.35); }
+    .reset-btn{ background: linear-gradient(135deg, #fb7185, var(--danger)); color:#fff; box-shadow:0 8px 18px rgba(239,68,68,.35); }
+
+    .stats{
+      display:flex; justify-content:space-around; margin-top:16px; padding:14px;
+      background: rgba(255,255,255,.06); border:1px solid var(--panelBorder); border-radius:16px;
+    }
+    .stat{ text-align:center; }
+    .stat-label{ font-size:13px; color:var(--muted); margin-bottom:2px; }
+    .stat-value{ font-size:20px; font-weight:800; }
+
+    .footer{ text-align:center; margin-top:16px; font-size:12px; color:var(--muted); }
+    @media (max-width:420px){
+      .time{ font-size:58px; }
+      .step-label{ font-size:10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MR Timer</h1>
+
+    <div class="phase">
+      <div class="phase-top">
+        <div class="phase-title" id="phaseTitle">Phase 1: Lymphatic Hop</div>
+        <div class="phase-count" id="phaseCount">1 / 10</div>
+      </div>
+
+      <!-- Cleaner stepper -->
+      <div class="stepper">
+        <div class="stepper-track">
+          <div class="stepper-fill" id="phaseFill" style="width:0%"></div>
+          <div class="stepper-dots" id="dots"></div>
+        </div>
+        <div class="stepper-labels">
+          <div class="step-label">Lymphatic<br>Hop</div>
+          <div class="step-label">Body<br>wave</div>
+          <div class="step-label">Alternate<br>arm swing</div>
+          <div class="step-label">Trunk<br>twist</div>
+          <div class="step-label">Dead<br>arms</div>
+          <div class="step-label">Golf<br>swing</div>
+          <div class="step-label">Wind<br>mill</div>
+          <div class="step-label">Slap<br>March</div>
+          <div class="step-label">Lun<br>ges</div>
+          <div class="step-label">Cool<br>down</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="timer">
+      <div class="time" id="time">00:00</div>
+      <div class="timebar"><div class="timebar-fill" id="timeFill"></div></div>
+    </div>
+
+    <div class="chips">
+      <button class="chip" data-duration="15">15s</button>
+      <button class="chip active" data-duration="30">30s</button>
+      <button class="chip" data-duration="45">45s</button>
+      <button class="chip" data-duration="60">60s</button>
+    </div>
+
+    <div class="controls">
+      <button class="btn start-btn" id="startBtn">Start</button>
+      <button class="btn pause-btn" id="pauseBtn" style="display:none;">Pause</button>
+      <button class="btn reset-btn" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">Durchlauf</div>
+        <div class="stat-value" id="roundStat">1/10</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Gesamtzeit</div>
+        <div class="stat-value" id="totalTime">00:00</div>
+      </div>
+    </div>
+
+    <div class="footer">© 2025 RADWB</div>
+  </div>
+
+  <script>
+    /* ===== Phasen ===== */
+    const phases = [
+      { number: 1, name: "Lymphatic Hop" },
+      { number: 2, name: "Body wave" },
+      { number: 3, name: "Alternate arm swing" },
+      { number: 4, name: "Trunk twist" },
+      { number: 5, name: "Dead arms" },
+      { number: 6, name: "Golf swing" },
+      { number: 7, name: "Wind mill" },
+      { number: 8, name: "Slap March" },
+      { number: 9, name: "Lunges" },     // umbenannt
+      { number: 10, name: "Cool down" }  // umbenannt
+    ];
+
+    /* ===== State ===== */
+    let idx = 0;
+    let duration = 30;
+    let remaining = duration;
+    let running = false, paused = false;
+    let tInterval = null, totalInterval = null;
+    let totalElapsed = 0;
+
+    /* ===== Elements ===== */
+    const timeEl = document.getElementById('time');
+    const timeFill = document.getElementById('timeFill');
+    const phaseTitle = document.getElementById('phaseTitle');
+    const phaseCount = document.getElementById('phaseCount');
+    const phaseFill = document.getElementById('phaseFill');
+    const roundStat = document.getElementById('roundStat');
+    const totalTimeEl = document.getElementById('totalTime');
+
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    /* ===== Build dots ===== */
+    const dotsWrap = document.getElementById('dots');
+    const dots = [];
+    for(let i=0;i<10;i++){
+      const d = document.createElement('div');
+      d.className = 'dot';
+      dotsWrap.appendChild(d);
+      dots.push(d);
+    }
+
+    /* ===== Audio ===== */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    async function unlockAudio(){
+      try{ if(audioCtx.state === 'suspended') await audioCtx.resume(); }catch(e){}
+    }
+    function beep(freq=780, dur=0.18, vol=0.35){
+      const t0 = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(vol, t0);
+      gain.gain.exponentialRampToValueAtTime(0.01, t0 + dur);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(t0); osc.stop(t0 + dur + 0.02);
+    }
+
+    /* ===== Speech ===== */
+    function speak(text){
+      if(!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      setTimeout(()=>{
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US'; u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
+        const voices = window.speechSynthesis.getVoices();
+        const v = voices.find(v=> (v.lang||'').startsWith('en'));
+        if(v) u.voice = v;
+        speechSynthesis.speak(u);
+      }, 100);
+    }
+
+    /* ===== UI Updates ===== */
+    function fmt(sec){
+      const m = Math.floor(sec/60), s = sec%60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    function updateTimer(){
+      timeEl.textContent = fmt(remaining);
+      const p = ((duration - remaining)/duration)*100;
+      timeFill.style.width = `${p}%`;
+    }
+
+    function updatePhaseHeader(){
+      const p = phases[idx];
+      phaseTitle.textContent = `Phase ${p.number}: ${p.name}`;
+      phaseCount.textContent = `${p.number} / 10`;
+      roundStat.textContent = `${p.number}/10`;
+
+      // stepper fill up to the LEFT edge of current dot
+      const percent = (idx/10)*100;
+      phaseFill.style.width = `${percent}%`;
+
+      dots.forEach((d,i)=> d.classList.toggle('active', i <= idx-1));
+    }
+
+    function updateTotal(){
+      totalTimeEl.textContent = fmt(totalElapsed);
+    }
+
+    /* ===== Phase logic ===== */
+    function startPhase(){
+      const p = phases[idx];
+      remaining = duration;
+      updateTimer();
+      updatePhaseHeader();
+      speak(`Phase ${p.number}. ${p.name}`);
+    }
+
+    function tick(){
+      if(remaining > 0){
+        // Count-down beeps at 3,2,1 seconds left
+        if([3,2,1].includes(remaining)){
+          // langsamer = 1 s Abstand ergibt sich durch den Tick selbst
+          beep(720, 0.20, 0.38);
+        }
+        remaining--;
+        updateTimer();
+      }else{
+        // Phase Ende
+        if(idx < phases.length - 1){
+          // mark current dot as done
+          dots[idx].classList.add('active');
+          idx++;
+          // kleine Pause für Klarheit
+          setTimeout(startPhase, 320);
+        }else{
+          // Routine fertig
+          stop();
+          // volle Füllung u. alle Dots aktiv
+          phaseFill.style.width = '100%';
+          dots.forEach(d=>d.classList.add('active'));
+          setTimeout(()=> speak('Routine done! Great Job, Hero! Enjoy your Day.'), 450);
+          // Reset Anzeige für nächsten Start
+          setTimeout(()=>{ idx = 0; updatePhaseHeader(); }, 1200);
+        }
+      }
+    }
+
+    function start(){
+      if(running) return;
+      running = true; paused = false;
+      startBtn.style.display = 'none';
+      pauseBtn.style.display = 'inline-block';
+      unlockAudio();
+      if(remaining === duration && idx === 0) startPhase();
+      tInterval = setInterval(tick, 1000);
+      totalInterval = setInterval(()=>{ totalElapsed++; updateTotal(); }, 1000);
+    }
+
+    function pause(){
+      if(!running && !paused) return;
+      if(!paused){
+        paused = true; running = false;
+        clearInterval(tInterval); clearInterval(totalInterval);
+        pauseBtn.textContent = 'Resume';
+      }else{
+        paused = false; running = true;
+        tInterval = setInterval(tick, 1000);
+        totalInterval = setInterval(()=>{ totalElapsed++; updateTotal(); }, 1000);
+        pauseBtn.textContent = 'Pause';
+      }
+    }
+
+    function stop(){
+      running = false; paused = false;
+      clearInterval(tInterval); clearInterval(totalInterval);
+      startBtn.style.display = 'inline-block';
+      pauseBtn.style.display = 'none';
+      pauseBtn.textContent = 'Pause';
+    }
+
+    function reset(){
+      stop();
+      idx = 0; duration = getActiveDuration(); remaining = duration;
+      totalElapsed = 0;
+      updateTimer(); updateTotal(); updatePhaseHeader();
+      dots.forEach(d=>d.classList.remove('active'));
+      phaseFill.style.width = '0%';
+    }
+
+    /* ===== Duration chips ===== */
+    function getActiveDuration(){
+      const active = document.querySelector('.chip.active');
+      return parseInt(active?.dataset.duration || '30', 10);
+    }
+    document.querySelectorAll('.chip').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        if(running) return;
+        document.querySelectorAll('.chip').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        duration = parseInt(btn.dataset.duration,10);
+        remaining = duration;
+        updateTimer();
+      });
+    });
+
+    /* ===== Bindings ===== */
+    startBtn.addEventListener('click', start);
+    pauseBtn.addEventListener('click', pause);
+    resetBtn.addEventListener('click', reset);
+
+    /* ===== Init ===== */
+    duration = getActiveDuration();
+    remaining = duration;
+    updateTimer(); updatePhaseHeader(); updateTotal();
+
+    // Preload voices (best effort)
+    if('speechSynthesis' in window){
+      const preload = ()=> speechSynthesis.getVoices();
+      preload();
+      if(speechSynthesis.onvoiceschanged !== undefined){
+        speechSynthesis.onvoiceschanged = preload;
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google" content="notranslate" />
+    <meta http-equiv="content-language" content="en" />
+    <title>MR Timer</title>
+    <style>
+        :root{
+            --bg1:#0f172a; /* slate-900 */
+            --bg2:#1e293b; /* slate-800 */
+            --card:rgba(255,255,255,.08);
+            --cardBorder:rgba(255,255,255,.12);
+            --text:#e2e8f0; /* slate-200 */
+            --muted:#a8b0be; /* slate-400 */
+            --accent1:#7c3aed; /* violet-600 */
+            --accent2:#22d3ee; /* cyan-400 */
+            --good1:#10b981; /* emerald-500 */
+            --good2:#34d399; /* emerald-400 */
+            --warn1:#f59e0b; /* amber-500 */
+            --danger:#ef4444; /* red-500 */
+        }
+
+        *{ margin:0; padding:0; box-sizing:border-box; }
+
+        body{
+            font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+            color: var(--text);
+            min-height:100vh;
+            background:
+              radial-gradient(1200px 800px at 10% 10%, rgba(124,58,237,.25), transparent 60%),
+              radial-gradient(1000px 700px at 90% 30%, rgba(34,211,238,.18), transparent 60%),
+              linear-gradient(180deg, var(--bg1), var(--bg2));
+            display:flex; align-items:center; justify-content:center; padding:24px;
+        }
+
+        .container{
+            width:100%; max-width:520px;
+            background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+            border:1px solid var(--cardBorder);
+            border-radius:24px; padding:22px 22px 16px;
+            backdrop-filter: blur(16px) saturate(120%);
+            box-shadow: 0 20px 60px rgba(0,0,0,.45);
+        }
+
+        h1{
+            text-align:center; margin-bottom:18px; letter-spacing:.4px;
+            font-weight:800; font-size:28px;
+            background: linear-gradient(135deg, var(--accent2), var(--accent1));
+            -webkit-background-clip:text; background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .phase-tracker{
+            border-radius:18px; padding:16px; margin-bottom:16px;
+            background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+            border:1px solid var(--cardBorder);
+        }
+
+        .phase-bar-container{
+            position:relative; height:56px; border-radius:28px; overflow:visible; margin-bottom:12px;
+            background:rgba(255,255,255,.06);
+        }
+        .progress-fill{
+            position:absolute; inset:0 0 0 auto; height:100%;
+            width:0%;
+            background: linear-gradient(90deg, var(--good1), var(--good2));
+            border-radius:28px;
+            transition: width .5s ease;
+            z-index:0;
+        }
+        .phase-pointer{
+            position:absolute; top:-14px; width:0; height:0;
+            border-left:12px solid transparent; border-right:12px solid transparent;
+            border-top:20px solid #fde047; /* amber-300 */
+            transform:translateX(-12px); transition:left .5s ease;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,.35));
+        }
+
+        .phase-segments{
+            position:absolute; inset:0; display:flex; padding:0 6px; z-index:1;
+        }
+        .phase-segment{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding-bottom:6px; border-right:1px dashed rgba(255,255,255,.18); }
+        .phase-segment:last-child{ border-right:none; }
+        .phase-number{ font-size:11px; font-weight:800; margin-bottom:1px; color:#fef3c7; letter-spacing:.3px; }
+        .phase-label{ font-size:8px; line-height:1.05; text-align:center; color:#e5e7eb; opacity:.95; }
+
+        .current-phase-info{
+            text-align:center; font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:.8px;
+            color:#f1f5f9;
+        }
+
+        .timer-display{
+            font-variant-numeric: tabular-nums;
+            font-size:56px; font-weight:800; text-align:center; margin:8px 0 10px;
+        }
+
+        .timer-progress{ width:100%; height:10px; background:rgba(255,255,255,.08); border-radius:6px; overflow:hidden; margin-bottom:16px; border:1px solid var(--cardBorder);}
+        .timer-progress-fill{ height:100%; width:0%; background: linear-gradient(90deg, var(--accent2), var(--accent1)); transition: width 1s linear; }
+
+        .duration-selector{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:16px;}
+        .chip{
+            padding:8px 14px; border-radius:999px; font-weight:700; font-size:14px; letter-spacing:.2px; cursor:pointer;
+            background:rgba(255,255,255,.06); border:1px solid var(--cardBorder); color:var(--text);
+            transition:transform .15s ease, background .15s ease, color .15s ease, border-color .15s ease;
+        }
+        .chip:hover{ transform:translateY(-2px); }
+        .chip.active{ background:linear-gradient(135deg, var(--accent2), var(--accent1)); color:#0b1020; border-color:transparent; }
+
+        .controls{ display:flex; justify-content:center; gap:12px; }
+        .btn{
+            padding:12px 22px; border:none; border-radius:14px; font-weight:900; letter-spacing:.6px; text-transform:uppercase; cursor:pointer;
+            color:#0b1020; transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+        }
+        .btn:active{ transform: translateY(0); filter: brightness(.98); }
+        .start-btn{ background: linear-gradient(135deg, var(--good2), var(--good1)); box-shadow:0 6px 16px rgba(16,185,129,.35); }
+        .pause-btn{ background: linear-gradient(135deg, #fde047, var(--warn1)); color:#1f2937; box-shadow:0 6px 16px rgba(245,158,11,.35); }
+        .reset-btn{ background: linear-gradient(135deg, #fb7185, var(--danger)); color:#fff; box-shadow:0 6px 16px rgba(239,68,68,.35); }
+
+        .stats{
+            display:flex; justify-content:space-around; margin-top:14px; padding:12px;
+            background: rgba(255,255,255,.06); border:1px solid var(--cardBorder); border-radius:14px;
+        }
+        .stat-item{ text-align:center; }
+        .stat-label{ font-size:12px; color:var(--muted); margin-bottom:2px; }
+        .stat-value{ font-size:18px; font-weight:800; }
+
+        .footer{ text-align:center; margin-top:16px; font-size:12px; color:var(--muted); }
+
+        @media (max-width:380px){
+            .phase-label{ font-size:7px; }
+            .phase-number{ font-size:10px; }
+            .timer-display{ font-size:48px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MR Timer</h1>
+
+        <div class="phase-tracker">
+            <div class="phase-bar-container">
+                <div class="progress-fill" id="phaseProgress" style="width:0%"></div>
+                <div class="phase-pointer" id="phasePointer" style="left:0%"></div>
+                <div class="phase-segments">
+                    <div class="phase-segment"><div class="phase-number">1</div><div class="phase-label">LYMPHATIC<br>HOP</div></div>
+                    <div class="phase-segment"><div class="phase-number">2</div><div class="phase-label">BODY<br>WAVE</div></div>
+                    <div class="phase-segment"><div class="phase-number">3</div><div class="phase-label">ARM<br>SWING</div></div>
+                    <div class="phase-segment"><div class="phase-number">4</div><div class="phase-label">TRUNK<br>TWIST</div></div>
+                    <div class="phase-segment"><div class="phase-number">5</div><div class="phase-label">DEAD<br>ARMS</div></div>
+                    <div class="phase-segment"><div class="phase-number">6</div><div class="phase-label">GOLF<br>SWING</div></div>
+                    <div class="phase-segment"><div class="phase-number">7</div><div class="phase-label">WIND<br>MILL</div></div>
+                    <div class="phase-segment"><div class="phase-number">8</div><div class="phase-label">SLAP<br>MARCH</div></div>
+                    <div class="phase-segment"><div class="phase-number">9</div><div class="phase-label">LUN<br>GES</div></div>
+                    <div class="phase-segment"><div class="phase-number">10</div><div class="phase-label">COOL<br>DOWN</div></div>
+                </div>
+            </div>
+            <div class="current-phase-info" id="currentPhaseName">Phase 1: Lymphatic Hop</div>
+        </div>
+
+        <div class="timer-display" id="timer">00:00</div>
+
+        <div class="timer-progress">
+            <div class="timer-progress-fill" id="timerProgress" style="width:0%"></div>
+        </div>
+
+        <div class="duration-selector">
+            <button class="chip" data-duration="15">15s</button>
+            <button class="chip active" data-duration="30">30s</button>
+            <button class="chip" data-duration="45">45s</button>
+            <button class="chip" data-duration="60">60s</button>
+        </div>
+
+        <div class="controls">
+            <button class="btn start-btn" id="startBtn">Start</button>
+            <button class="btn pause-btn" id="pauseBtn" style="display:none;">Pause</button>
+            <button class="btn reset-btn" id="resetBtn">Reset</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Durchlauf</div>
+                <div class="stat-value" id="roundCount">1/10</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Gesamtzeit</div>
+                <div class="stat-value" id="totalTime">00:00</div>
+            </div>
+        </div>
+
+        <div class="footer">© 2025 RADWB</div>
+    </div>
+
+    <script>
+        // ==== Phase definitions (renamed 9 & 10) ====
+        const phases = [
+            { number: 1, name: "Lymphatic Hop" },
+            { number: 2, name: "Body wave" },
+            { number: 3, name: "Alternate arm swing" },
+            { number: 4, name: "Trunk twist" },
+            { number: 5, name: "Dead arms" },
+            { number: 6, name: "Golf swing" },
+            { number: 7, name: "Wind mill" },
+            { number: 8, name: "Slap March" },
+            { number: 9, name: "Lunges" },       // was Push slide
+            { number: 10, name: "Cool down" }    // was Final Plié
+        ];
+
+        // ==== State ====
+        let currentPhase = 0;               // index 0..9
+        let selectedDuration = 30;
+        let timeRemaining = selectedDuration;
+        let isRunning = false;
+        let isPaused = false;
+        let timerInterval = null;
+        let totalElapsedTime = 0;
+        let totalTimeInterval = null;
+
+        // ==== Audio ====
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        async function ensureAudioUnlocked(){
+            try{
+                if(audioContext.state === 'suspended'){
+                    await audioContext.resume();
+                }
+            }catch(e){
+                console.warn('Audio resume failed:', e);
+            }
+        }
+
+        // Schedule a short beep at an offset (in seconds) from "now"
+        function playBeep(offsetSec = 0){
+            const t = audioContext.currentTime + offsetSec;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(880, t); // A5-ish
+            gain.gain.setValueAtTime(0.35, t);
+            gain.gain.exponentialRampToValueAtTime(0.01, t + 0.12);
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.start(t);
+            osc.stop(t + 0.14);
+        }
+
+        // Three short beeps at the phase boundary
+        function playTripleBeep(){
+            // space ~160ms apart for a crisp cadence
+            playBeep(0);
+            playBeep(0.18);
+            playBeep(0.36);
+        }
+
+        // ==== Elements ====
+        const timerDisplay = document.getElementById('timer');
+        const currentPhaseNameDisplay = document.getElementById('currentPhaseName');
+        const timerProgressBar = document.getElementById('timerProgress');
+        const phaseProgressBar = document.getElementById('phaseProgress');
+        const phasePointer = document.getElementById('phasePointer');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const roundCountDisplay = document.getElementById('roundCount');
+        const totalTimeDisplay = document.getElementById('totalTime');
+
+        // ==== Duration chips ====
+        document.querySelectorAll('.chip').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                if(!isRunning){
+                    document.querySelectorAll('.chip').forEach(b=>b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedDuration = parseInt(btn.dataset.duration, 10);
+                    timeRemaining = selectedDuration;
+                    updateTimerDisplay();
+                }
+            });
+        });
+
+        // ==== UI updates ====
+        function updateTimerDisplay(){
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+            const progressPercent = ((selectedDuration - timeRemaining) / selectedDuration) * 100;
+            timerProgressBar.style.width = `${progressPercent}%`;
+        }
+
+        function updatePhaseDisplay(){
+            const progressPercent = (currentPhase / 10) * 100;
+            const pointerPercent = ((currentPhase + 0.5) / 10) * 100;
+
+            phaseProgressBar.style.width = `${progressPercent}%`;
+            phasePointer.style.left = `${pointerPercent}%`;
+
+            if(currentPhase < phases.length){
+                currentPhaseNameDisplay.textContent = `Phase ${phases[currentPhase].number}: ${phases[currentPhase].name}`;
+                roundCountDisplay.textContent = `${phases[currentPhase].number}/10`;
+            }
+        }
+
+        function updateTotalTime(){
+            const minutes = Math.floor(totalElapsedTime / 60);
+            const seconds = totalElapsedTime % 60;
+            totalTimeDisplay.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        }
+
+        // ==== Speech ====
+        function speak(text){
+            if(!('speechSynthesis' in window)){
+                console.warn('Speech synthesis not supported');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            setTimeout(()=>{
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'en-US';
+                u.rate = 1.0;
+                u.pitch = 1.0;
+                u.volume = 1.0;
+                const voices = window.speechSynthesis.getVoices();
+                const english = voices.find(v => v.lang === 'en-US' || (v.lang || '').startsWith('en'));
+                if(english) u.voice = english;
+                window.speechSynthesis.speak(u);
+            }, 100);
+        }
+
+        // ==== Phase control ====
+        function startPhase(){
+            const phase = phases[currentPhase];
+            updatePhaseDisplay();
+            speak(`Phase ${phase.number}. ${phase.name}`);
+            timeRemaining = selectedDuration;
+            updateTimerDisplay();
+        }
+
+        function tick(){
+            if(timeRemaining > 0){
+                timeRemaining--;
+                updateTimerDisplay();
+                // (No countdown beeps — we beep exactly at the end of each phase)
+            }else{
+                // Phase finished → 3 short beeps
+                playTripleBeep();
+
+                if(currentPhase < phases.length - 1){
+                    currentPhase++;
+                    // let the triple-beep breathe very briefly, then start next phase
+                    setTimeout(startPhase, 420);
+                }else{
+                    // Routine finished
+                    stop();
+                    currentPhase = 10; // show full progression
+                    updatePhaseDisplay();
+                    // Voice line exactly as requested, no alert/confirmation dialog
+                    setTimeout(()=>{
+                        speak("Routine done! Great Job, Hero! Enjoy your Day.");
+                        // Prepare for next run
+                        currentPhase = 0;
+                    }, 450);
+                }
+            }
+        }
+
+        function start(){
+            if(!isRunning){
+                isRunning = true;
+                isPaused = false;
+                startBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+                ensureAudioUnlocked(); // unlock/resume audio context on user gesture
+
+                if(currentPhase === 0 && timeRemaining === selectedDuration){
+                    startPhase();
+                }
+                timerInterval = setInterval(tick, 1000);
+                totalTimeInterval = setInterval(()=>{ totalElapsedTime++; updateTotalTime(); }, 1000);
+            }
+        }
+
+        function pause(){
+            if(isRunning && !isPaused){
+                isPaused = true; isRunning = false;
+                clearInterval(timerInterval);
+                clearInterval(totalTimeInterval);
+                pauseBtn.textContent = 'Resume';
+            }else if(isPaused){
+                isPaused = false; isRunning = true;
+                timerInterval = setInterval(tick, 1000);
+                totalTimeInterval = setInterval(()=>{ totalElapsedTime++; updateTotalTime(); }, 1000);
+                pauseBtn.textContent = 'Pause';
+            }
+        }
+
+        function stop(){
+            isRunning = false; isPaused = false;
+            clearInterval(timerInterval);
+            clearInterval(totalTimeInterval);
+            startBtn.style.display = 'inline-block';
+            pauseBtn.style.display = 'none';
+            pauseBtn.textContent = 'Pause';
+        }
+
+        function reset(){
+            stop();
+            currentPhase = 0;
+            timeRemaining = selectedDuration;
+            totalElapsedTime = 0;
+            updateTimerDisplay(); updateTotalTime(); updatePhaseDisplay();
+        }
+
+        // ==== Events ====
+        startBtn.addEventListener('click', start);
+        pauseBtn.addEventListener('click', pause);
+        resetBtn.addEventListener('click', reset);
+
+        // ==== Init ====
+        updateTimerDisplay();
+        updatePhaseDisplay();
+
+        // Preload / log voices (best-effort)
+        if('speechSynthesis' in window){
+            const loadVoices = ()=>{
+                const voices = window.speechSynthesis.getVoices();
+                console.log('Voices:', voices.length);
+            };
+            loadVoices();
+            if(window.speechSynthesis.onvoiceschanged !== undefined){
+                window.speechSynthesis.onvoiceschanged = loadVoices;
+            }
+            setTimeout(loadVoices, 100);
+        }
+    </script>
+</body>
+</html>

@@ -41,7 +41,6 @@
       -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
     }
 
-    /* Top bar with language toggle */
     .topbar{
       display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;
     }
@@ -57,7 +56,7 @@
       color:#0b1020; background:linear-gradient(135deg,var(--accent2),var(--accent1));
     }
 
-    /* === Phase header / stepper === */
+    /* Phase / Stepper */
     .phase{
       background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
       border:1px solid var(--panelBorder);
@@ -94,7 +93,7 @@
       writing-mode: vertical-rl; text-orientation: mixed; user-select:none; cursor:help; line-height:1;
     }
 
-    /* === Timer === */
+    /* Timer */
     .timer{text-align:center;}
     .time{
       font-variant-numeric:tabular-nums; font-size:72px; font-weight:900; line-height:1; margin:6px 0 12px;
@@ -105,7 +104,7 @@
     }
     .timebar-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent1)); transition:width 1s linear; }
 
-    /* === Controls === */
+    /* Controls */
     .chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:18px; }
     .chip{
       padding:10px 16px; border-radius:999px; font-weight:800; font-size:15px; letter-spacing:.3px; cursor:pointer;
@@ -130,10 +129,10 @@
       background: rgba(255,255,255,.06); border:1px solid var(--panelBorder); border-radius:16px;
     }
     .stat{ text-align:center; }
-    .stat-label{ font-size:13px; color:var(--muted); margin-bottom:2px; }
+    .stat-label{ font-size:13px; color:#9ca3af; margin-bottom:2px; }
     .stat-value{ font-size:20px; font-weight:800; }
 
-    .footer{ text-align:center; margin-top:16px; font-size:12px; color:var(--muted); }
+    .footer{ text-align:center; margin-top:16px; font-size:12px; color:#9ca3af; }
     @media (max-width:420px){
       .time{ font-size:58px; }
       .step-label{ font-size:10px; }
@@ -145,7 +144,7 @@
     <h1>MR Timer</h1>
 
     <div class="topbar">
-      <div style="opacity:.001">.</div><!-- spacer -->
+      <div style="opacity:.001">.</div>
       <div class="lang" role="group" aria-label="Language">
         <button id="langDe" class="active">DE</button>
         <button id="langEn">EN</button>
@@ -154,7 +153,7 @@
 
     <div class="phase">
       <div class="phase-top">
-        <div class="phase-title" id="phaseTitle">Phase 1: Lymphatic Hop</div>
+        <div class="phase-title" id="phaseTitle">Schritt 1: Lymphatic Hop</div>
         <div class="phase-count" id="phaseCount">1 / 10</div>
       </div>
 
@@ -164,7 +163,6 @@
           <div class="stepper-dots" id="dots"></div>
         </div>
 
-        <!-- kompakte, vertikale Kurzlabels + Tooltip -->
         <div class="stepper-labels" id="labels">
           <div class="step-label" data-i="0" title="Lymphatic Hop">LH</div>
           <div class="step-label" data-i="1" title="Body wave">BW</div>
@@ -188,7 +186,7 @@
     <div class="chips">
       <button class="chip" data-duration="15">15s</button>
       <button class="chip" data-duration="30">30s</button>
-      <button class="chip active" data-duration="45">45s</button><!-- Standard aktiv -->
+      <button class="chip active" data-duration="45">45s</button>
       <button class="chip" data-duration="60">60s</button>
     </div>
 
@@ -213,25 +211,24 @@
   </div>
 
   <script>
-    /* ===== Phasen (EN + DE) ===== */
+    /* Phasen (EN + DE) – deutsche Namen aus deinem Snippet übernommen */
     const phases = [
-      { number: 1, nameEn: "Lymphatic Hop",  nameDe: "Lymph-Hop",         short: "LH" },
-      { number: 2, nameEn: "Body wave",      nameDe: "Körperwelle",       short: "BW" },
-      { number: 3, nameEn: "Alternate arm swing", nameDe: "Alternierender Armschwung", short: "AS" },
-      { number: 4, nameEn: "Trunk twist",    nameDe: "Rumpfdrehungen",      short: "TT" },
-      { number: 5, nameEn: "Dead arms",      nameDe: "Tote Arme",         short: "DA" },
-      { number: 6, nameEn: "Golf swing",     nameDe: "Golfschwünge",       short: "GS" },
-      { number: 7, nameEn: "Wind mill",      nameDe: "Windmühle",         short: "WM" },
-      { number: 8, nameEn: "Slap March",     nameDe: "Clap Marsch",     short: "SM" },
-      { number: 9, nameEn: "Lunges",         nameDe: "Ausfallschritte",   short: "LG" },
-      { number:10, nameEn: "Cool down",      nameDe: "Cool Down",         short: "CD" }
+      { number: 1,  nameEn: "Lymphatic Hop",            nameDe: "Lümf-Hop",                     short: "LH" },
+      { number: 2,  nameEn: "Body wave",                nameDe: "Körperwelle",                  short: "BW" },
+      { number: 3,  nameEn: "Alternate arm swing",      nameDe: "Alternierender Armschwung",    short: "AS" },
+      { number: 4,  nameEn: "Trunk twist",              nameDe: "Rumpfdrehungen",               short: "TT" },
+      { number: 5,  nameEn: "Dead arms",                nameDe: "Tote Arme",                    short: "DA" },
+      { number: 6,  nameEn: "Golf swing",               nameDe: "Golfschwünge",                 short: "GS" },
+      { number: 7,  nameEn: "Wind mill",                nameDe: "Windmühle",                    short: "WM" },
+      { number: 8,  nameEn: "Slap March",               nameDe: "Marsch",                       short: "SM" },
+      { number: 9,  nameEn: "Lunges",                   nameDe: "Ausfallschritte",              short: "LG" },
+      { number: 10, nameEn: "Cool down",                nameDe: "Cool Down",                    short: "CD" }
     ];
 
-    /* ===== Language state ===== */
-    let currentLang = 'de'; // DE als Start
+    /* Sprache */
+    let currentLang = 'de';
     const langBtnDe = document.getElementById('langDe');
     const langBtnEn = document.getElementById('langEn');
-
     langBtnDe.addEventListener('click', ()=> setLang('de'));
     langBtnEn.addEventListener('click', ()=> setLang('en'));
 
@@ -239,37 +236,35 @@
       currentLang = lang;
       langBtnDe.classList.toggle('active', lang==='de');
       langBtnEn.classList.toggle('active', lang==='en');
-      // UI Texte aktualisieren
       updatePhaseHeader();
       updateTooltips();
     }
+    function getPhaseName(p){ return currentLang === 'de' ? p.nameDe : p.nameEn; }
+    function getLangHint(){ return currentLang === 'de' ? 'de-DE' : 'en-US'; }
 
-    function getPhaseName(p){
-      return currentLang === 'de' ? p.nameDe : p.nameEn;
-    }
-
-    function getLangHint(){
-      return currentLang === 'de' ? 'de-DE' : 'en-US';
+    /* Zahlen als Worte für die Sprachansage */
+    const EN_NUM = ["one","two","three","four","five","six","seven","eight","nine","ten"];
+    const DE_NUM = ["eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn"];
+    function getStepIntro(n){
+      return currentLang === 'de' ? `Schritt ${DE_NUM[n-1]}` : `Step ${EN_NUM[n-1]}`;
     }
 
     function updateTooltips(){
-      const labels = document.querySelectorAll('.step-label');
-      labels.forEach(el=>{
-        const i = parseInt(el.dataset.i,10);
-        const p = phases[i];
-        el.title = getPhaseName(p);
+      document.querySelectorAll('.step-label').forEach(el=>{
+        const i = +el.dataset.i;
+        el.title = getPhaseName(phases[i]);
       });
     }
 
-    /* ===== State ===== */
+    /* State */
     let idx = 0;
-    let duration = 45;                    // initial; echte Quelle ist getActiveDuration()
+    let duration = 45;
     let remaining = duration;
     let running = false, paused = false;
     let tInterval = null, totalInterval = null;
     let totalElapsed = 0;
 
-    /* ===== Elements ===== */
+    /* Elements */
     const timeEl = document.getElementById('time');
     const timeFill = document.getElementById('timeFill');
     const phaseTitle = document.getElementById('phaseTitle');
@@ -277,12 +272,11 @@
     const phaseFill = document.getElementById('phaseFill');
     const roundStat = document.getElementById('roundStat');
     const totalTimeEl = document.getElementById('totalTime');
-
     const startBtn = document.getElementById('startBtn');
     const pauseBtn = document.getElementById('pauseBtn');
     const resetBtn = document.getElementById('resetBtn');
 
-    /* ===== Build dots ===== */
+    /* Dots bauen */
     const dotsWrap = document.getElementById('dots');
     const dots = [];
     for(let i=0;i<10;i++){
@@ -292,38 +286,24 @@
       dots.push(d);
     }
 
-    /* ===== Wake Lock (Screen anlassen) ===== */
+    /* Wake Lock */
     let wakeLock = null;
     async function requestWakeLock() {
       try {
         if ('wakeLock' in navigator) {
           wakeLock = await navigator.wakeLock.request('screen');
-          wakeLock.addEventListener('release', () => {
-            console.log('Wake Lock freigegeben');
-          });
-          console.log('Wake Lock aktiv');
+          wakeLock.addEventListener('release', () => console.log('Wake Lock freigegeben'));
         }
-      } catch (err) {
-        console.error(`${err.name}: ${err.message}`);
-      }
+      } catch (err) { console.error(`${err.name}: ${err.message}`); }
     }
-    function releaseWakeLock() {
-      if (wakeLock) {
-        wakeLock.release();
-        wakeLock = null;
-      }
-    }
+    function releaseWakeLock() { if (wakeLock) { wakeLock.release(); wakeLock = null; } }
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && running) {
-        requestWakeLock();
-      }
+      if (document.visibilityState === 'visible' && running) requestWakeLock();
     });
 
-    /* ===== Audio ===== */
+    /* Audio (Beeps) */
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    async function unlockAudio(){
-      try{ if(audioCtx.state === 'suspended') await audioCtx.resume(); }catch(e){}
-    }
+    async function unlockAudio(){ try{ if(audioCtx.state === 'suspended') await audioCtx.resume(); }catch(e){} }
     function beep({freq=720, dur=0.20, vol=0.40} = {}){
       const t0 = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
@@ -336,7 +316,7 @@
       osc.start(t0); osc.stop(t0 + dur + 0.02);
     }
 
-    /* ===== Speech ===== */
+    /* Speech */
     function speak(text, langHint='en-US'){
       if(!('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
@@ -344,7 +324,6 @@
         const u = new SpeechSynthesisUtterance(text);
         u.lang = langHint; u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
         const voices = window.speechSynthesis.getVoices();
-        // Stimme passend zur Sprache wählen
         const base = langHint.split('-')[0].toLowerCase();
         const v = voices.find(v=> (v.lang||'').toLowerCase().startsWith(base));
         if(v) u.voice = v;
@@ -352,49 +331,37 @@
       }, 100);
     }
 
-    /* ===== UI Updates ===== */
-    function fmt(sec){
-      const m = Math.floor(sec/60), s = sec%60;
-      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    }
-
+    /* UI Updates */
+    function fmt(sec){ const m = Math.floor(sec/60), s = sec%60; return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`; }
     function updateTimer(){
       timeEl.textContent = fmt(remaining);
       const p = ((duration - remaining)/duration)*100;
       timeFill.style.width = `${p}%`;
     }
-
     function updatePhaseHeader(){
       const p = phases[idx];
       const name = getPhaseName(p);
-      const phaseWord = currentLang === 'de' ? 'Phase' : 'Phase';
-      phaseTitle.textContent = `${phaseWord} ${p.number}: ${name}`;
+      const stepWord = currentLang === 'de' ? 'Schritt' : 'Step';
+      phaseTitle.textContent = `${stepWord} ${p.number}: ${name}`;
       phaseCount.textContent = `${p.number} / 10`;
       roundStat.textContent = `${p.number}/10`;
-      const percent = (idx/10)*100;
-      phaseFill.style.width = `${percent}%`;
+      phaseFill.style.width = `${(idx/10)*100}%`;
       dots.forEach((d,i)=> d.classList.toggle('active', i <= idx-1));
     }
+    function updateTotal(){ totalTimeEl.textContent = fmt(totalElapsed); }
 
-    function updateTotal(){
-      totalTimeEl.textContent = fmt(totalElapsed);
-    }
-
-    /* ===== Phase logic ===== */
+    /* Ablauf */
     function startPhase(){
       const p = phases[idx];
       remaining = duration;
       updateTimer();
       updatePhaseHeader();
-      // Ansage in gewählter Sprache
-      const name = getPhaseName(p);
-      const txt = currentLang === 'de' ? `Phase ${p.number}. ${name}` : `Phase ${p.number}. ${name}`;
-      speak(txt, getLangHint());
+      const intro = getStepIntro(p.number); // "Schritt eins" / "Step one"
+      speak(`${intro}. ${getPhaseName(p)}`, getLangHint());
     }
 
     function tick(){
       if(remaining > 0){
-        // 3-2-1: zwei kurze, letzter länger
         if(remaining === 3 || remaining === 2){
           beep({freq:720, dur:0.20, vol:0.40});
         } else if(remaining === 1){
@@ -403,23 +370,19 @@
         remaining--;
         updateTimer();
       }else{
-        // Phase Ende
         if(idx < phases.length - 1){
           dots[idx].classList.add('active');
           idx++;
           setTimeout(startPhase, 320);
         }else{
-          // Routine fertig
           stop();
           phaseFill.style.width = '100%';
           dots.forEach(d=>d.classList.add('active'));
-          // Abschlussansage je nach Sprache
           if(currentLang === 'de'){
-            setTimeout(()=> speak('Routine abgeschlossen! Großartige Arbeit, mein Held! Genieße einen tollen Tag.', 'de-DE'), 450);
+            setTimeout(()=> speak('Routine abgeschlossen! Großartige Arbeit, mein Held! Hab einen tollen Tag.', 'de-DE'), 450);
           }else{
             setTimeout(()=> speak('Routine done! Great Job, Hero! Enjoy your Day.', 'en-US'), 450);
           }
-          // Anzeige zurücksetzen
           setTimeout(()=>{ idx = 0; updatePhaseHeader(); }, 1200);
         }
       }
@@ -431,8 +394,7 @@
       startBtn.style.display = 'none';
       pauseBtn.style.display = 'inline-block';
       unlockAudio();
-      requestWakeLock(); // Bildschirm anlassen
-
+      requestWakeLock();
       if(remaining === duration && idx === 0) startPhase();
       tInterval = setInterval(tick, 1000);
       totalInterval = setInterval(()=>{ totalElapsed++; updateTotal(); }, 1000);
@@ -472,7 +434,7 @@
       phaseFill.style.width = '0%';
     }
 
-    /* ===== Duration chips ===== */
+    /* Durations */
     function getActiveDuration(){
       const active = document.querySelector('.chip.active');
       return parseInt(active?.dataset.duration || '45', 10); // Fallback 45s
@@ -488,17 +450,16 @@
       });
     });
 
-    /* ===== Bindings ===== */
+    /* Bindings */
     startBtn.addEventListener('click', start);
     pauseBtn.addEventListener('click', pause);
     resetBtn.addEventListener('click', reset);
 
-    /* ===== Init ===== */
+    /* Init */
     duration = getActiveDuration();
     remaining = duration;
     updateTimer(); updatePhaseHeader(); updateTotal(); updateTooltips();
 
-    // Stimmen laden (best effort)
     if('speechSynthesis' in window){
       const preload = ()=> speechSynthesis.getVoices();
       preload();

@@ -153,7 +153,7 @@
 
     <div class="phase">
       <div class="phase-top">
-        <div class="phase-title" id="phaseTitle">Schritt 1: Lymphatic Hop</div>
+        <div class="phase-title" id="phaseTitle">Schritt 1: Lymph-Hop</div>
         <div class="phase-count" id="phaseCount">1 / 10</div>
       </div>
 
@@ -164,7 +164,7 @@
         </div>
 
         <div class="stepper-labels" id="labels">
-          <div class="step-label" data-i="0" title="Lymphatic Hop">LH</div>
+          <div class="step-label" data-i="0" title="Lymph-Hop">LH</div>
           <div class="step-label" data-i="1" title="Body wave">BW</div>
           <div class="step-label" data-i="2" title="Alternate arm swing">AS</div>
           <div class="step-label" data-i="3" title="Trunk twist">TT</div>
@@ -211,18 +211,18 @@
   </div>
 
   <script>
-    /* Phasen (EN + DE) – deutsche Namen aus deinem Snippet übernommen */
+    /* Phasen (EN + DE) – UI-Name vs. Sprach-Name für Phase 1 getrennt */
     const phases = [
-      { number: 1,  nameEn: "Lymphatic Hop",            nameDe: "Lümf-Hop",                     short: "LH" },
-      { number: 2,  nameEn: "Body wave",                nameDe: "Körperwelle",                  short: "BW" },
-      { number: 3,  nameEn: "Alternate arm swing",      nameDe: "Alternierender Armschwung",    short: "AS" },
-      { number: 4,  nameEn: "Trunk twist",              nameDe: "Rumpfdrehungen",               short: "TT" },
-      { number: 5,  nameEn: "Dead arms",                nameDe: "Tote Arme",                    short: "DA" },
-      { number: 6,  nameEn: "Golf swing",               nameDe: "Golfschwünge",                 short: "GS" },
-      { number: 7,  nameEn: "Wind mill",                nameDe: "Windmühle",                    short: "WM" },
-      { number: 8,  nameEn: "Slap March",               nameDe: "Marsch",                       short: "SM" },
-      { number: 9,  nameEn: "Lunges",                   nameDe: "Ausfallschritte",              short: "LG" },
-      { number: 10, nameEn: "Cool down",                nameDe: "Cool Down",                    short: "CD" }
+      { number: 1,  nameEn: "Lymphatic Hop",  nameDe: "Lymph-Hop", nameDeSpeak: "Lümf-Hop", short: "LH" },
+      { number: 2,  nameEn: "Body wave",      nameDe: "Körperwelle",                     short: "BW" },
+      { number: 3,  nameEn: "Alternate arm swing", nameDe: "Alternierender Armschwung",  short: "AS" },
+      { number: 4,  nameEn: "Trunk twist",    nameDe: "Rumpfdrehungen",                  short: "TT" },
+      { number: 5,  nameEn: "Dead arms",      nameDe: "Tote Arme",                       short: "DA" },
+      { number: 6,  nameEn: "Golf swing",     nameDe: "Golfschwünge",                    short: "GS" },
+      { number: 7,  nameEn: "Wind mill",      nameDe: "Windmühle",                       short: "WM" },
+      { number: 8,  nameEn: "Slap March",     nameDe: "Knieheber",                          short: "SM" },
+      { number: 9,  nameEn: "Lunges",         nameDe: "Ausfallschritte",                 short: "LG" },
+      { number: 10, nameEn: "Cool down",      nameDe: "Cool Down",                       short: "CD" }
     ];
 
     /* Sprache */
@@ -240,9 +240,13 @@
       updateTooltips();
     }
     function getPhaseName(p){ return currentLang === 'de' ? p.nameDe : p.nameEn; }
+    function getSpokenPhaseName(p){
+      if (currentLang === 'de') return p.nameDeSpeak || p.nameDe;
+      return p.nameEn;
+    }
     function getLangHint(){ return currentLang === 'de' ? 'de-DE' : 'en-US'; }
 
-    /* Zahlen als Worte für die Sprachansage */
+    /* Zahlen als Worte */
     const EN_NUM = ["one","two","three","four","five","six","seven","eight","nine","ten"];
     const DE_NUM = ["eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn"];
     function getStepIntro(n){
@@ -258,7 +262,7 @@
 
     /* State */
     let idx = 0;
-    let duration = 45;
+    let duration = 45;         // Standard
     let remaining = duration;
     let running = false, paused = false;
     let tInterval = null, totalInterval = null;
@@ -356,8 +360,9 @@
       remaining = duration;
       updateTimer();
       updatePhaseHeader();
-      const intro = getStepIntro(p.number); // "Schritt eins" / "Step one"
-      speak(`${intro}. ${getPhaseName(p)}`, getLangHint());
+      const intro = getStepIntro(p.number);      // "Schritt eins" / "Step one"
+      const spoken = getSpokenPhaseName(p);      // "Lümf-Hop" nur für TTS bei DE
+      speak(`${intro}. ${spoken}`, getLangHint());
     }
 
     function tick(){
@@ -365,7 +370,7 @@
         if(remaining === 3 || remaining === 2){
           beep({freq:720, dur:0.20, vol:0.40});
         } else if(remaining === 1){
-          beep({freq:760, dur:0.36, vol:0.45});
+          beep({freq:760, dur:0.36, vol:0.45});  // längerer Abschluss
         }
         remaining--;
         updateTimer();

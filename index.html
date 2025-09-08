@@ -51,9 +51,7 @@
     .phase-title{ font-weight:800; font-size:16px; text-transform:uppercase; letter-spacing:.8px; }
     .phase-count{ font-weight:800; opacity:.85; }
 
-    .stepper{
-      position:relative; padding:18px 8px 0;
-    }
+    .stepper{ position:relative; padding:18px 8px 0; }
     .stepper-track{
       position:relative; height:6px; background:var(--track); border-radius:999px;
     }
@@ -67,6 +65,7 @@
       position:absolute; left:0; right:0; top:50%; transform:translateY(-50%);
       display:grid; grid-template-columns:repeat(10,1fr);
       gap:0; padding:0 2px;
+      pointer-events:none; /* nur Labels sind hoverbar */
     }
     .dot{
       width:14px; height:14px; border-radius:999px; justify-self:center;
@@ -76,19 +75,25 @@
     }
     .dot.active{ background:var(--dotActive); border-color:rgba(34,197,94,.5); transform:scale(1.05); }
 
+    /* exakt unter jeden Punkt ausgerichtete Labels (vertikal + Kurzcode) */
     .stepper-labels{
-      margin-top:14px;
-      display:grid; grid-template-columns:repeat(10,1fr); gap:4px;
+      margin-top:16px;
+      display:grid; grid-template-columns:repeat(10,1fr);
+      align-items:start;
+      padding:0 2px;
     }
     .step-label{
-      text-align:center; font-size:11px; line-height:1.05; color:#e5e7eb; opacity:.95;
-      word-break:keep-all;
+      justify-self:center;
+      font-size:11px; font-weight:800; letter-spacing:.5px; color:#e5e7eb; opacity:.95;
+      writing-mode: vertical-rl; text-orientation: mixed; /* vertikal & kompakt */
+      transform: translateY(0); /* exakt mittig unter dem Punkt */
+      user-select:none;
+      cursor:help; /* Tooltip-Hinweis */
+      line-height:1;
     }
 
     /* === Timer === */
-    .timer{
-      text-align:center;
-    }
+    .timer{text-align:center;}
     .time{
       font-variant-numeric:tabular-nums; font-size:72px; font-weight:900; line-height:1; margin:6px 0 12px;
     }
@@ -96,9 +101,7 @@
       width:100%; height:12px; background:rgba(255,255,255,.08); border:1px solid var(--panelBorder);
       border-radius:999px; overflow:hidden; margin-bottom:18px;
     }
-    .timebar-fill{
-      height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent1)); transition:width 1s linear;
-    }
+    .timebar-fill{ height:100%; width:0%; background:linear-gradient(90deg,var(--accent2),var(--accent1)); transition:width 1s linear; }
 
     /* === Controls === */
     .chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:10px; margin-bottom:18px; }
@@ -151,17 +154,19 @@
           <div class="stepper-fill" id="phaseFill" style="width:0%"></div>
           <div class="stepper-dots" id="dots"></div>
         </div>
-        <div class="stepper-labels">
-          <div class="step-label">Lymphatic<br>Hop</div>
-          <div class="step-label">Body<br>wave</div>
-          <div class="step-label">Alternate<br>arm swing</div>
-          <div class="step-label">Trunk<br>twist</div>
-          <div class="step-label">Dead<br>arms</div>
-          <div class="step-label">Golf<br>swing</div>
-          <div class="step-label">Wind<br>mill</div>
-          <div class="step-label">Slap<br>March</div>
-          <div class="step-label">Lun<br>ges</div>
-          <div class="step-label">Cool<br>down</div>
+
+        <!-- exakt ausgerichtete, vertikale Kurzlabels + Tooltip -->
+        <div class="stepper-labels" id="labels">
+          <div class="step-label" title="Lymphatic Hop">LH</div>
+          <div class="step-label" title="Body wave">BW</div>
+          <div class="step-label" title="Alternate arm swing">AS</div>
+          <div class="step-label" title="Trunk twist">TT</div>
+          <div class="step-label" title="Dead arms">DA</div>
+          <div class="step-label" title="Golf swing">GS</div>
+          <div class="step-label" title="Wind mill">WM</div>
+          <div class="step-label" title="Slap March">SM</div>
+          <div class="step-label" title="Lunges">LG</div>
+          <div class="step-label" title="Cool down">CD</div>
         </div>
       </div>
     </div>
@@ -173,8 +178,8 @@
 
     <div class="chips">
       <button class="chip" data-duration="15">15s</button>
-      <button class="chip active" data-duration="30">30s</button>
-      <button class="chip" data-duration="45">45s</button>
+      <button class="chip" data-duration="30">30s</button>
+      <button class="chip active" data-duration="45">45s</button>
       <button class="chip" data-duration="60">60s</button>
     </div>
 
@@ -201,16 +206,16 @@
   <script>
     /* ===== Phasen ===== */
     const phases = [
-      { number: 1, name: "Lymphatic Hop" },
-      { number: 2, name: "Body wave" },
-      { number: 3, name: "Alternate arm swing" },
-      { number: 4, name: "Trunk twist" },
-      { number: 5, name: "Dead arms" },
-      { number: 6, name: "Golf swing" },
-      { number: 7, name: "Wind mill" },
-      { number: 8, name: "Slap March" },
-      { number: 9, name: "Lunges" },     // umbenannt
-      { number: 10, name: "Cool down" }  // umbenannt
+      { number: 1, name: "Lymphatic Hop", short: "LH" },
+      { number: 2, name: "Body wave", short: "BW" },
+      { number: 3, name: "Alternate arm swing", short: "AS" },
+      { number: 4, name: "Trunk twist", short: "TT" },
+      { number: 5, name: "Dead arms", short: "DA" },
+      { number: 6, name: "Golf swing", short: "GS" },
+      { number: 7, name: "Wind mill", short: "WM" },
+      { number: 8, name: "Slap March", short: "SM" },
+      { number: 9, name: "Lunges", short: "LG" },
+      { number: 10, name: "Cool down", short: "CD" }
     ];
 
     /* ===== State ===== */
@@ -249,7 +254,7 @@
     async function unlockAudio(){
       try{ if(audioCtx.state === 'suspended') await audioCtx.resume(); }catch(e){}
     }
-    function beep(freq=780, dur=0.18, vol=0.35){
+    function beep(freq=720, dur=0.20, vol=0.38){
       const t0 = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -293,7 +298,7 @@
       phaseCount.textContent = `${p.number} / 10`;
       roundStat.textContent = `${p.number}/10`;
 
-      // stepper fill up to the LEFT edge of current dot
+      // stepper fill bis zur linken Kante des aktuellen Dots
       const percent = (idx/10)*100;
       phaseFill.style.width = `${percent}%`;
 
@@ -315,29 +320,22 @@
 
     function tick(){
       if(remaining > 0){
-        // Count-down beeps at 3,2,1 seconds left
-        if([3,2,1].includes(remaining)){
-          // langsamer = 1 s Abstand ergibt sich durch den Tick selbst
-          beep(720, 0.20, 0.38);
-        }
+        // Count-down Beeps bei 3,2,1 Sekunden
+        if([3,2,1].includes(remaining)) beep(720, 0.20, 0.38);
         remaining--;
         updateTimer();
       }else{
         // Phase Ende
         if(idx < phases.length - 1){
-          // mark current dot as done
           dots[idx].classList.add('active');
           idx++;
-          // kleine Pause für Klarheit
           setTimeout(startPhase, 320);
         }else{
           // Routine fertig
           stop();
-          // volle Füllung u. alle Dots aktiv
           phaseFill.style.width = '100%';
           dots.forEach(d=>d.classList.add('active'));
           setTimeout(()=> speak('Routine done! Great Job, Hero! Enjoy your Day.'), 450);
-          // Reset Anzeige für nächsten Start
           setTimeout(()=>{ idx = 0; updatePhaseHeader(); }, 1200);
         }
       }
@@ -388,7 +386,7 @@
     /* ===== Duration chips ===== */
     function getActiveDuration(){
       const active = document.querySelector('.chip.active');
-      return parseInt(active?.dataset.duration || '30', 10);
+      return parseInt(active?.dataset.duration || '45', 10);
     }
     document.querySelectorAll('.chip').forEach(btn=>{
       btn.addEventListener('click', ()=>{

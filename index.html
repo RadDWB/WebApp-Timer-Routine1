@@ -132,6 +132,36 @@
     .stat-label{ font-size:13px; color:#9ca3af; margin-bottom:2px; }
     .stat-value{ font-size:20px; font-weight:800; }
 
+    /* --- Donate / Support section --- */
+    .support{
+      margin-top:16px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--panelBorder);
+      border-radius:16px; padding:14px; text-align:center;
+    }
+    .support p{ margin:0 0 12px; color:var(--muted); }
+    .support-buttons{
+      display:flex; flex-wrap:wrap; gap:12px; justify-content:center; align-items:center;
+    }
+    .support-buttons .btn-holder{ height:48px; display:flex; align-items:center; justify-content:center; }
+    #kofi-holder iframe{ height:48px !important; min-height:48px !important; }
+    #bmc-holder img{
+      display:block; height:48px; width:auto; border-radius:12px;
+      box-shadow:0 8px 18px rgba(0,0,0,.25);
+    }
+    .donate-btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      height:48px; padding:0 18px; border-radius:12px; text-decoration:none; font-weight:900;
+      color:#0b1020; background:linear-gradient(135deg,var(--accent2),var(--accent1));
+      box-shadow:0 8px 18px rgba(124,58,237,.35);
+    }
+    .donate-btn:hover{ filter:brightness(1.05); transform:translateY(-1px); }
+    @media (max-width:420px){
+      #kofi-holder iframe{ height:44px !important; }
+      #bmc-holder img{ height:44px; }
+      .donate-btn{ height:44px; }
+    }
+
     .footer{ text-align:center; margin-top:16px; font-size:12px; color:#9ca3af; }
     @media (max-width:420px){
       .time{ font-size:58px; }
@@ -146,14 +176,16 @@
     <div class="topbar">
       <div style="opacity:.001">.</div>
       <div class="lang" role="group" aria-label="Language">
-        <button id="langDe" class="active">DE</button>
-        <button id="langEn">EN</button>
+        <!-- EN aktiv, DE inaktiv -->
+        <button id="langDe">DE</button>
+        <button id="langEn" class="active">EN</button>
       </div>
     </div>
 
     <div class="phase">
       <div class="phase-top">
-        <div class="phase-title" id="phaseTitle">Schritt 1: Lymph-Hop</div>
+        <!-- Initial auf Englisch -->
+        <div class="phase-title" id="phaseTitle">Step 1: Lymphatic Hop</div>
         <div class="phase-count" id="phaseCount">1 / 10</div>
       </div>
 
@@ -164,7 +196,7 @@
         </div>
 
         <div class="stepper-labels" id="labels">
-          <div class="step-label" data-i="0" title="Lymph-Hop">LH</div>
+          <div class="step-label" data-i="0" title="Lymphatic Hop">LH</div>
           <div class="step-label" data-i="1" title="Body wave">BW</div>
           <div class="step-label" data-i="2" title="Alternate arm swing">AS</div>
           <div class="step-label" data-i="3" title="Trunk twist">TT</div>
@@ -198,14 +230,47 @@
 
     <div class="stats">
       <div class="stat">
-        <div class="stat-label">Durchlauf</div>
+        <div class="stat-label">Round</div>
         <div class="stat-value" id="roundStat">1/10</div>
       </div>
       <div class="stat">
-        <div class="stat-label">Gesamtzeit</div>
+        <div class="stat-label">Total time</div>
         <div class="stat-value" id="totalTime">00:00</div>
       </div>
     </div>
+
+    <!-- Support / Donation -->
+    <section class="support" aria-label="Support the project">
+      <p><strong>Enjoying the timer?</strong> Buy me a coffee – thank you! ☕️</p>
+      <div class="support-buttons">
+        <!-- Ko-fi (PayPal) -->
+        <div id="kofi-holder" class="btn-holder">
+          <div id="kofi-widget" aria-label="Ko-fi Button"></div>
+        </div>
+
+        <!-- Buy Me a Coffee (Stripe) -->
+        <div id="bmc-holder" class="btn-holder">
+          <a href="https://www.buymeacoffee.com/rduwenbecky">
+            <img src="https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee%20(Stripe)&emoji=☕&slug=rduwenbecky&button_colour=5F7FFF&font_colour=ffffff&font_family=Lato&outline_colour=000000&coffee_colour=FFDD00" alt="Buy Me a Coffee Button" />
+          </a>
+        </div>
+
+        <!-- PayPal.me -->
+        <div class="btn-holder">
+          <a class="donate-btn" href="https://paypal.me/duwenbeck?locale.x=de_DE&amp;country.x=DE" target="_blank" rel="noopener">
+            Paypal.me Spende Kaffee
+          </a>
+        </div>
+      </div>
+
+      <script src="https://storage.ko-fi.com/cdn/widget/Widget_2.js"></script>
+      <script>
+        try{
+          kofiwidget2.init('Spendier ´n Kaffee PAYPAL', '#72a4f2', 'R5R319DK8N');
+          kofiwidget2.draw();
+        }catch(e){ console.warn('Ko-fi Widget konnte nicht geladen werden.', e); }
+      </script>
+    </section>
 
     <div class="footer">© 2025 RADWB</div>
   </div>
@@ -220,13 +285,13 @@
       { number: 5,  nameEn: "Dead arms",      nameDe: "Tote Arme",                       short: "DA" },
       { number: 6,  nameEn: "Golf swing",     nameDe: "Golfschwünge",                    short: "GS" },
       { number: 7,  nameEn: "Wind mill",      nameDe: "Windmühle",                       short: "WM" },
-      { number: 8,  nameEn: "Slap March",     nameDe: "Knieheber",                          short: "SM" },
+      { number: 8,  nameEn: "Slap March",     nameDe: "Knieheber",                       short: "SM" },
       { number: 9,  nameEn: "Lunges",         nameDe: "Ausfallschritte",                 short: "LG" },
       { number: 10, nameEn: "Cool down",      nameDe: "Cool Down",                       short: "CD" }
     ];
 
-    /* Sprache */
-    let currentLang = 'de';
+    /* Sprache – Default jetzt EN */
+    let currentLang = 'en';
     const langBtnDe = document.getElementById('langDe');
     const langBtnEn = document.getElementById('langEn');
     langBtnDe.addEventListener('click', ()=> setLang('de'));
@@ -296,7 +361,7 @@
       try {
         if ('wakeLock' in navigator) {
           wakeLock = await navigator.wakeLock.request('screen');
-          wakeLock.addEventListener('release', () => console.log('Wake Lock freigegeben'));
+          wakeLock.addEventListener('release', () => console.log('Wake Lock released'));
         }
       } catch (err) { console.error(`${err.name}: ${err.message}`); }
     }
@@ -360,8 +425,8 @@
       remaining = duration;
       updateTimer();
       updatePhaseHeader();
-      const intro = getStepIntro(p.number);      // "Schritt eins" / "Step one"
-      const spoken = getSpokenPhaseName(p);      // "Lümf-Hop" nur für TTS bei DE
+      const intro = getStepIntro(p.number);
+      const spoken = getSpokenPhaseName(p);
       speak(`${intro}. ${spoken}`, getLangHint());
     }
 
@@ -370,7 +435,7 @@
         if(remaining === 3 || remaining === 2){
           beep({freq:720, dur:0.20, vol:0.40});
         } else if(remaining === 1){
-          beep({freq:760, dur:0.36, vol:0.45});  // längerer Abschluss
+          beep({freq:760, dur:0.36, vol:0.45});
         }
         remaining--;
         updateTimer();
@@ -442,7 +507,7 @@
     /* Durations */
     function getActiveDuration(){
       const active = document.querySelector('.chip.active');
-      return parseInt(active?.dataset.duration || '45', 10); // Fallback 45s
+      return parseInt(active?.dataset.duration || '45', 10);
     }
     document.querySelectorAll('.chip').forEach(btn=>{
       btn.addEventListener('click', ()=>{
